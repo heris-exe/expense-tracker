@@ -53,14 +53,20 @@ export function AuthProvider({ children }) {
   /**
    * Sign in with Google (OAuth). Redirects the user to Google, then back to this app.
    * Enable Google in Supabase: Authentication → Providers → Google, and add your
-   * Google OAuth client ID and secret. Add your app URL to Supabase redirect URLs.
+   * Google OAuth client ID and secret. In production, set VITE_APP_URL to your
+   * live site URL so the redirect goes there instead of localhost. Add that URL
+   * to Supabase Authentication → URL Configuration → Redirect URLs.
    */
   const signInWithGoogle = async () => {
     if (!supabase) return { error: new Error('Supabase not configured') }
+    const redirectUrl =
+      typeof window !== 'undefined'
+        ? (import.meta.env.VITE_APP_URL || window.location.origin)
+        : undefined
     return supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+        redirectTo: redirectUrl,
       },
     })
   }

@@ -55,6 +55,8 @@ npm run build
 Deploy the **dist/** folder to any static host (Netlify, Vercel, GitHub Pages).  
 Set the same `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the host’s environment so auth and data work in production.
 
+**Google sign-in in production:** To avoid redirecting to localhost after sign-in, set `VITE_APP_URL` to your live URL (e.g. `https://your-app.vercel.app`) in the host's environment. In Supabase: **Authentication → URL Configuration** set **Site URL** to that same URL and add it to **Redirect URLs**.
+
 Preview locally: `npm run preview`
 
 ## Project structure
