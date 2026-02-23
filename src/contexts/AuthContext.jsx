@@ -50,6 +50,21 @@ export function AuthProvider({ children }) {
     return supabase.auth.resetPasswordForEmail({ email })
   }
 
+  /**
+   * Sign in with Google (OAuth). Redirects the user to Google, then back to this app.
+   * Enable Google in Supabase: Authentication → Providers → Google, and add your
+   * Google OAuth client ID and secret. Add your app URL to Supabase redirect URLs.
+   */
+  const signInWithGoogle = async () => {
+    if (!supabase) return { error: new Error('Supabase not configured') }
+    return supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+      },
+    })
+  }
+
   const value = {
     user,
     loading,
@@ -59,6 +74,7 @@ export function AuthProvider({ children }) {
     signIn,
     signUp,
     signOut,
+    signInWithGoogle,
     resetPasswordForEmail,
   }
 

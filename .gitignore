@@ -28,5 +28,9 @@ Thumbs.db
 .vscode/
 *.sublime-*
 
+# Markdown — ignore all .md files except README.md
+*.md
+!README.md
+
 # Optional: uncomment if you keep Excel files in the project
 # *.xlsx

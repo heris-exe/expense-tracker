@@ -27,7 +27,7 @@ import { AuthScreen } from './components/AuthScreen'
 import { SetupRequired } from './components/SetupRequired'
 
 function App() {
-  const { user, loading, isConfigured, signIn, signUp, resetPasswordForEmail, sessionMessage, setSessionMessage } = useAuth()
+  const { user, loading, isConfigured, signIn, signUp, signInWithGoogle, resetPasswordForEmail, sessionMessage, setSessionMessage } = useAuth()
   const [authLoading, setAuthLoading] = useState(false)
   const [authError, setAuthError] = useState(null)
   const [authMessage, setAuthMessage] = useState(null)
@@ -59,6 +59,17 @@ function App() {
     }
   }
 
+  const handleSignInWithGoogle = async () => {
+    setAuthError(null)
+    setAuthMessage(null)
+    setSessionMessage?.(null)
+    setAuthLoading(true)
+    const { error } = await signInWithGoogle()
+    setAuthLoading(false)
+    if (error) setAuthError(error)
+    // On success, Supabase redirects to Google and then back here; no need to set user state manually.
+  }
+
   if (!isConfigured) return <SetupRequired />
   if (loading) {
     return (
@@ -72,6 +83,7 @@ function App() {
       <AuthScreen
         onSignIn={handleSignIn}
         onSignUp={handleSignUp}
+        onSignInWithGoogle={handleSignInWithGoogle}
         onForgotPassword={resetPasswordForEmail}
         isLoading={authLoading}
         error={authError}
