@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react'
 import { todayStr } from '../utils/helpers'
 import { CATEGORIES, PAYMENT_METHODS } from '../constants'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
-export default function ExpenseForm({ onSubmit, editingExpense, onCancelEdit }) {
+/** Form fields only; used inside Add/Edit expense modal. */
+export default function ExpenseForm({ onSubmit, editingExpense, onCancel, onSuccess }) {
   const [date, setDate] = useState(todayStr())
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
@@ -30,6 +41,7 @@ export default function ExpenseForm({ onSubmit, editingExpense, onCancelEdit }) 
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!category?.trim()) return
     onSubmit({
       date,
       category,
@@ -38,6 +50,7 @@ export default function ExpenseForm({ onSubmit, editingExpense, onCancelEdit }) 
       paymentMethod,
       notes: notes.trim(),
     })
+    onSuccess?.()
     if (!editingExpense) {
       setDate(todayStr())
       setCategory('')
@@ -48,49 +61,48 @@ export default function ExpenseForm({ onSubmit, editingExpense, onCancelEdit }) 
   }
 
   return (
-    <section className="add-expense">
-      <h2>Add expense</h2>
-      <form className="expense-form" onSubmit={handleSubmit}>
-        <div className="form-row">
-          <label htmlFor="date">Date</label>
-          <input
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="modal-date">Date</Label>
+          <Input
             type="date"
-            id="date"
+            id="modal-date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
           />
         </div>
-        <div className="form-row">
-          <label htmlFor="category">Category</label>
-          <select
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-          >
-            <option value="">Choose...</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+        <div className="space-y-2">
+          <Label htmlFor="modal-category">Category</Label>
+          <Select value={category || undefined} onValueChange={setCategory}>
+            <SelectTrigger id="modal-category" className="w-full">
+              <SelectValue placeholder="Choose..." />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div className="form-row">
-          <label htmlFor="description">Description</label>
-          <input
-            type="text"
-            id="description"
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="modal-description">Description</Label>
+          <Input
+            id="modal-description"
             placeholder="What was it for?"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
           />
         </div>
-        <div className="form-row">
-          <label htmlFor="amount">Amount (₦)</label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="modal-amount">Amount (₦)</Label>
+          <Input
             type="number"
-            id="amount"
+            id="modal-amount"
             min="0"
             step="0.01"
             placeholder="0"
@@ -99,39 +111,45 @@ export default function ExpenseForm({ onSubmit, editingExpense, onCancelEdit }) 
             required
           />
         </div>
-        <div className="form-row">
-          <label htmlFor="paymentMethod">Payment method</label>
-          <select
-            id="paymentMethod"
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-          >
-            {PAYMENT_METHODS.map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
+        <div className="space-y-2">
+          <Label htmlFor="modal-payment">Payment method</Label>
+          <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+            <SelectTrigger id="modal-payment" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAYMENT_METHODS.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div className="form-row full">
-          <label htmlFor="notes">Notes (optional)</label>
-          <input
-            type="text"
-            id="notes"
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="modal-notes">Notes (optional)</Label>
+          <Input
+            id="modal-notes"
             placeholder="Any extra notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
         </div>
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary">
-            {editingExpense ? 'Save changes' : 'Add expense'}
-          </button>
-          {editingExpense && (
-            <button type="button" className="btn btn-secondary" onClick={onCancelEdit}>
-              Cancel edit
-            </button>
-          )}
-        </div>
-      </form>
-    </section>
+      </div>
+      <div className="flex flex-wrap gap-3 border-t border-border pt-4">
+        <Button type="submit">
+          {editingExpense ? 'Save changes' : 'Add expense'}
+        </Button>
+        {editingExpense ? (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : (
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
+      </div>
+    </form>
   )
 }

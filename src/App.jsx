@@ -1,94 +1,78 @@
-import { useState, useEffect, useRef } from 'react'
-import { STORAGE_KEY } from './constants'
 import Dashboard from './components/Dashboard'
-import seedExpenses from './data/seedExpenses.json'
 import ExpenseCharts from './components/ExpenseCharts'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseLog from './components/ExpenseLog'
-import './App.css'
-
-/**
- * Load expenses from localStorage on mount.
- */
-function loadExpenses() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
+import { AppHeader, AppFooter } from './components/layout'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+import { useExpenses } from './hooks/useExpenses'
 
 function App() {
-  const [expenses, setExpenses] = useState([])
-  const [editingExpense, setEditingExpense] = useState(null)
-  const hasHydrated = useRef(false)
-
-  // Hydrate from localStorage once on mount; if empty, prepopulate from Excel seed data
-  useEffect(() => {
-    const stored = loadExpenses()
-    setExpenses(stored.length > 0 ? stored : seedExpenses)
-    hasHydrated.current = true
-  }, [])
-
-  // Persist to localStorage when expenses change (after first load, so we don't overwrite)
-  useEffect(() => {
-    if (!hasHydrated.current) return
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
-  }, [expenses])
-
-  const handleAdd = (payload) => {
-    if (editingExpense) {
-      setExpenses((prev) =>
-        prev.map((e) =>
-          e.id === editingExpense.id ? { ...e, ...payload } : e
-        )
-      )
-      setEditingExpense(null)
-    } else {
-      setExpenses((prev) => [...prev, { id: Date.now(), ...payload }])
-    }
-  }
-
-  const handleEdit = (expense) => {
-    setEditingExpense(expense)
-  }
-
-  const handleCancelEdit = () => {
-    setEditingExpense(null)
-  }
-
-  const handleDelete = (id) => {
-    if (!window.confirm('Delete this expense?')) return
-    setExpenses((prev) => prev.filter((e) => e.id !== id))
-  }
+  const {
+    expenses,
+    editingExpense,
+    isModalOpen,
+    openForm,
+    closeModal,
+    handleAdd,
+    handleEdit,
+    handleDelete,
+  } = useExpenses()
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1>Expense Tracker 2026</h1>
-        <p className="tagline">Track daily expenses in ₦ — no Excel needed</p>
-      </header>
+    <div className="min-h-screen w-full px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <AppHeader />
 
-      <Dashboard expenses={expenses} />
+      <main className="py-8">
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <Dashboard expenses={expenses} />
+            <Button
+              onClick={openForm}
+              className="h-10 shrink-0 gap-2 sm:self-end"
+            >
+              <Plus className="h-4 w-4" />
+              Add expense
+            </Button>
+          </div>
+          <ExpenseCharts expenses={expenses} />
+          <ExpenseLog
+            expenses={expenses}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
+      </main>
 
-      <ExpenseCharts expenses={expenses} />
+      <Dialog open={isModalOpen} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="rounded-xl border-border shadow-md sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editingExpense ? 'Edit expense' : 'Add expense'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingExpense
+                ? 'Update the transaction details below.'
+                : 'Record a new transaction in ₦.'}
+            </DialogDescription>
+          </DialogHeader>
+          <ExpenseForm
+            onSubmit={handleAdd}
+            editingExpense={editingExpense}
+            onCancel={closeModal}
+            onSuccess={closeModal}
+          />
+        </DialogContent>
+      </Dialog>
 
-      <ExpenseForm
-        onSubmit={handleAdd}
-        editingExpense={editingExpense}
-        onCancelEdit={handleCancelEdit}
-      />
-
-      <ExpenseLog
-        expenses={expenses}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-
-      <footer className="footer">
-        <p>Data is stored in your browser. Export/import coming soon.</p>
-      </footer>
+      <AppFooter />
     </div>
   )
 }

@@ -1,32 +1,145 @@
-/* Expense Tracker 2026 - Global styles */
+@import "tailwindcss";
 
+/* Livvic is loaded via <link> in index.html so @import isn't needed (must be first in CSS otherwise) */
+
+/* Tailwind v4: use .dark class for dark mode (not just prefers-color-scheme) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme: source variables (--theme-*) so @theme can reference them */
 :root {
-  --bg: #0f1419;
-  --surface: #1a2332;
-  --surface2: #243447;
-  --text: #e6edf3;
-  --text-muted: #8b949e;
-  --accent: #58a6ff;
-  --accent-soft: rgba(88, 166, 255, 0.15);
-  --success: #3fb950;
-  --danger: #f85149;
-  --radius: 10px;
-  --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-sans: "Livvic", system-ui, -apple-system, sans-serif;
+  --theme-background: #fafafa;
+  --theme-foreground: #171717;
+  --theme-card: #ffffff;
+  --theme-card-foreground: #171717;
+  --theme-popover: #ffffff;
+  --theme-popover-foreground: #171717;
+  --theme-primary: #262626;
+  --theme-primary-foreground: #fafafa;
+  --theme-secondary: #f5f5f5;
+  --theme-secondary-foreground: #171717;
+  --theme-muted: #f5f5f5;
+  --theme-muted-foreground: #737373;
+  --theme-accent: #f5f5f5;
+  --theme-accent-foreground: #171717;
+  --theme-destructive: #dc2626;
+  --theme-destructive-foreground: #ffffff;
+  --theme-border: #e5e5e5;
+  --theme-input: #e5e5e5;
+  --theme-ring: #737373;
 }
 
+/* Dark theme when .dark is on html */
+.dark {
+  --theme-background: #0a0a0a;
+  --theme-foreground: #e5e5e5;
+  --theme-card: #0f0f0f;
+  --theme-card-foreground: #e5e5e5;
+  --theme-popover: #0f0f0f;
+  --theme-popover-foreground: #e5e5e5;
+  --theme-primary: #e5e5e5;
+  --theme-primary-foreground: #0a0a0a;
+  --theme-secondary: #171717;
+  --theme-secondary-foreground: #e5e5e5;
+  --theme-muted: #171717;
+  --theme-muted-foreground: #737373;
+  --theme-accent: #171717;
+  --theme-accent-foreground: #e5e5e5;
+  --theme-destructive: #ef4444;
+  --theme-destructive-foreground: #ffffff;
+  --theme-border: #262626;
+  --theme-input: #262626;
+  --theme-ring: #737373;
+}
+
+/* Tailwind/shadcn: map theme tokens to our switchable --theme-* variables */
+@theme inline {
+  --font-sans: "Livvic", system-ui, -apple-system, sans-serif;
+  --color-background: var(--theme-background);
+  --color-foreground: var(--theme-foreground);
+  --color-card: var(--theme-card);
+  --color-card-foreground: var(--theme-card-foreground);
+  --color-popover: var(--theme-popover);
+  --color-popover-foreground: var(--theme-popover-foreground);
+  --color-primary: var(--theme-primary);
+  --color-primary-foreground: var(--theme-primary-foreground);
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-foreground: var(--theme-secondary-foreground);
+  --color-muted: var(--theme-muted);
+  --color-muted-foreground: var(--theme-muted-foreground);
+  --color-accent: var(--theme-accent);
+  --color-accent-foreground: var(--theme-accent-foreground);
+  --color-destructive: var(--theme-destructive);
+  --color-destructive-foreground: var(--theme-destructive-foreground);
+  --color-border: var(--theme-border);
+  --color-input: var(--theme-input);
+  --color-ring: var(--theme-ring);
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+}
+
+/* Base */
 * {
   box-sizing: border-box;
 }
 
+/* Force Livvic everywhere – override Tailwind preflight */
+html,
+body,
+#root,
+#root * {
+  font-family: "Livvic", system-ui, -apple-system, sans-serif !important;
+}
+
+/* Slightly larger base size so Livvic doesn’t look tiny (same px can look smaller than system fonts) */
+html {
+  font-size: 18px;
+}
+
 body {
   margin: 0;
-  font-family: var(--font);
-  background: var(--bg);
-  color: var(--text);
+  font-size: 1rem;
+  background: var(--theme-background);
+  color: var(--theme-foreground);
   line-height: 1.5;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* Pie chart legend: prevent long category names from overflowing */
+.recharts-legend-item-text {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Expense log table: force typography and colors to match app design */
+.expense-log-table thead th {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--theme-muted-foreground);
+}
+.expense-log-table tbody td {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--theme-foreground);
+}
+.expense-log-table tbody td.text-muted-cell {
+  color: var(--theme-muted-foreground);
+}
+.expense-log-table tbody td.amount-cell {
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
