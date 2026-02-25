@@ -16,6 +16,7 @@ import {
 } from 'recharts'
 import { formatAmount } from '../utils/helpers'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 /* Distinct category colors – readable on black, still cohesive */
 const CHART_COLORS = [
@@ -101,14 +102,85 @@ function useIsNarrow() {
   return isNarrow
 }
 
+const cardClass =
+  'overflow-hidden border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md rounded-xl'
+
+/** Standalone daily expense line chart; used beside Smart Insights. */
+export function DailyExpenseChart({ expenses }) {
+  const dailyData = useDailyData(expenses)
+
+  return (
+    <section className="flex h-full min-h-0 flex-col gap-5">
+      <div className="shrink-0">
+        <h2 className="text-sm font-medium text-foreground tracking-tight">Daily expense</h2>
+        <p className="mt-0.5 text-xs text-muted-foreground">Spending over time by day</p>
+      </div>
+      <Card className={`${cardClass} min-h-[280px] flex-1`}>
+        {dailyData.length > 0 ? (
+          <>
+            <CardContent className="px-0 pb-0 pt-0">
+              <div className="h-[200px] w-full sm:h-[260px]" role="img" aria-label="Daily expense over time">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dailyData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fill: AXIS_TICK, fontSize: 11 }}
+                      tickFormatter={(v) => (v || '').slice(5)}
+                    />
+                    <YAxis
+                      tick={{ fill: AXIS_TICK, fontSize: 12 }}
+                      tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip
+                      content={<CustomTooltip />}
+                      labelFormatter={(label) => label}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke={LINE_STROKE}
+                      strokeWidth={2}
+                      dot={{ fill: LINE_STROKE, r: 3 }}
+                      name="Total"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </>
+        ) : (
+          <CardContent className="py-12">
+            <p className="text-center text-sm text-muted-foreground">
+              Add some expenses to see your daily spending trend here.
+            </p>
+          </CardContent>
+        )}
+      </Card>
+    </section>
+  )
+}
+
+export function DailyExpenseChartSkeleton() {
+  return (
+    <section className="flex h-full min-h-0 flex-col gap-5">
+      <div className="shrink-0">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="mt-2 h-3 w-40" />
+      </div>
+      <Card className="overflow-hidden border-border bg-card p-5 shadow-sm rounded-xl min-h-[280px] flex-1">
+        <div className="h-[200px] w-full sm:h-[260px] min-h-[200px]">
+          <Skeleton className="h-full w-full rounded-xl" />
+        </div>
+      </Card>
+    </section>
+  )
+}
+
 export default function ExpenseCharts({ expenses }) {
   const isNarrow = useIsNarrow()
   const categoryData = useCategoryData(expenses)
   const monthlyData = useMonthlyData(expenses)
-  const dailyData = useDailyData(expenses)
-
-  const cardClass =
-    'overflow-hidden border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md rounded-xl'
 
   if (expenses.length === 0) {
     return (
@@ -198,43 +270,32 @@ export default function ExpenseCharts({ expenses }) {
           </CardContent>
         </Card>
       </div>
-      {dailyData.length > 0 && (
-        <Card className={cardClass}>
-          <CardHeader className="gap-1 pb-3 pt-0">
-            <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Daily expense</h3>
-          </CardHeader>
-          <CardContent className="px-0 pb-0 pt-0">
-            <div className="h-[200px] w-full sm:h-[260px]" role="img" aria-label="Daily expense over time">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dailyData} margin={{ top: 8, right: 8, left: 8, bottom: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fill: AXIS_TICK, fontSize: 11 }}
-                    tickFormatter={(v) => (v || '').slice(5)}
-                  />
-                  <YAxis
-                    tick={{ fill: AXIS_TICK, fontSize: 12 }}
-                    tickFormatter={(v) => `₦${(v / 1000).toFixed(0)}k`}
-                  />
-                  <Tooltip
-                    content={<CustomTooltip />}
-                    labelFormatter={(label) => label}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="value"
-                    stroke={LINE_STROKE}
-                    strokeWidth={2}
-                    dot={{ fill: LINE_STROKE, r: 3 }}
-                    name="Total"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </section>
   )
 }
+
+export function ExpenseChartsSkeleton() {
+  return (
+    <section className="space-y-5" aria-label="Loading spending charts">
+      <div>
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="mt-2 h-3 w-56" />
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, idx) => (
+          <Card key={idx} className="overflow-hidden border-border bg-card p-5 shadow-sm rounded-xl">
+            <CardHeader className="gap-1 pb-3 pt-0">
+              <Skeleton className="h-3 w-40" />
+            </CardHeader>
+            <CardContent className="px-0 pb-0 pt-0">
+              <div className="h-[220px] w-full sm:h-[280px]">
+                <Skeleton className="h-full w-full rounded-xl" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  )
+}
+

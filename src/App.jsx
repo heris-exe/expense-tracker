@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react'
-import Dashboard from './components/Dashboard'
-import ExpenseCharts from './components/ExpenseCharts'
+import Dashboard, { DashboardSkeleton } from './components/Dashboard'
+import SmartInsights, { SmartInsightsSkeleton } from './components/SmartInsights'
+import ExpenseCharts, { ExpenseChartsSkeleton, DailyExpenseChart, DailyExpenseChartSkeleton } from './components/ExpenseCharts'
 import ExpenseForm from './components/ExpenseForm'
-import ExpenseLog from './components/ExpenseLog'
+import ExpenseLog, { ExpenseLogSkeleton } from './components/ExpenseLog'
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog'
 import { AppHeader, AppFooter } from './components/layout'
 import {
@@ -21,7 +22,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Plus, Download, Upload, ChevronDown, RefreshCw } from 'lucide-react'
 import { useExpenses } from './hooks/useExpenses'
+import { useBudgets } from './hooks/useBudgets'
 import { exportExpenses, parseImportFile } from './utils/exportImport'
+import { formatAmount } from './utils/helpers'
+import BudgetManager from './components/BudgetManager'
 import { useAuth } from './contexts/AuthContext'
 import { AuthScreen } from './components/AuthScreen'
 import { SetupRequired } from './components/SetupRequired'
@@ -118,9 +122,23 @@ function AppContent() {
     importExpenses,
   } = useExpenses()
 
+  const {
+    budgetProgress,
+    isLoading: budgetsLoading,
+    addBudget,
+    updateBudget,
+    removeBudget,
+  } = useBudgets(expenses)
+
   const [importError, setImportError] = useState(null)
+  const [budgetBannerDismissed, setBudgetBannerDismissed] = useState(false)
   const fileInputRef = useRef(null)
   const isImporting = importProgress && !importProgress.done
+
+  const budgetAlerts = budgetProgress.filter((p) => p.state === 'over' || p.state === 'near')
+  const showBudgetBanner = budgetAlerts.length > 0 && !budgetBannerDismissed
+  const overBudgets = budgetAlerts.filter((p) => p.state === 'over')
+  const nearBudgets = budgetAlerts.filter((p) => p.state === 'near')
 
   const handleExport = (format) => {
     exportExpenses(expenses, format)
@@ -186,9 +204,47 @@ function AppContent() {
             {importError}
           </p>
         )}
+        {showBudgetBanner && (
+          <div
+            className={`mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-4 py-3 ${
+              overBudgets.length > 0
+                ? 'border-destructive/50 bg-destructive/10'
+                : 'border-amber-500/50 bg-amber-500/10'
+            }`}
+            role="alert"
+          >
+            <div className="min-w-0 flex-1 text-sm">
+              {overBudgets.length > 0 && (
+                <p className="font-medium text-destructive">
+                  Over budget: {overBudgets.map((p) => `${p.budget.scope === 'overall' ? 'Overall' : p.budget.category} (${p.budget.periodType})`).join(', ')} — {formatAmount(overBudgets.reduce((s, p) => s + (p.spent - p.budget.amount), 0))} over limit.
+                </p>
+              )}
+              {nearBudgets.length > 0 && overBudgets.length === 0 && (
+                <p className="font-medium text-amber-700 dark:text-amber-400">
+                  Near budget limit: {nearBudgets.map((p) => `${p.budget.scope === 'overall' ? 'Overall' : p.budget.category} (${p.budget.periodType})`).join(', ')}.
+                </p>
+              )}
+              {nearBudgets.length > 0 && overBudgets.length > 0 && (
+                <p className="mt-1 text-muted-foreground">
+                  Also near limit: {nearBudgets.map((p) => `${p.budget.scope === 'overall' ? 'Overall' : p.budget.category}`).join(', ')}.
+                </p>
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="shrink-0"
+              onClick={() => setBudgetBannerDismissed(true)}
+              aria-label="Dismiss"
+            >
+              Dismiss
+            </Button>
+          </div>
+        )}
         <div className="flex flex-col gap-6 sm:gap-10">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <Dashboard expenses={expenses} />
+            {isLoading ? <DashboardSkeleton /> : <Dashboard expenses={expenses} />}
             <div className="flex flex-col gap-2 sm:items-end">
               <div className="flex flex-wrap gap-2 justify-end">
                 <Button
@@ -254,12 +310,41 @@ function AppContent() {
               />
             </div>
           </div>
-          <ExpenseCharts expenses={expenses} />
-          <ExpenseLog
-            expenses={expenses}
-            onEdit={handleEdit}
-            onDelete={openDeleteConfirm}
-          />
+          <div className="grid gap-6 sm:gap-10 grid-cols-1 lg:grid-cols-2 lg:items-stretch">
+            {isLoading ? (
+              <SmartInsightsSkeleton />
+            ) : (
+              <SmartInsights expenses={expenses} />
+            )}
+            {isLoading ? (
+              <DailyExpenseChartSkeleton />
+            ) : (
+              <DailyExpenseChart expenses={expenses} />
+            )}
+          </div>
+          {!isLoading && (
+            <BudgetManager
+              budgetProgress={budgetProgress}
+              onAddBudget={addBudget}
+              onUpdateBudget={updateBudget}
+              onRemoveBudget={removeBudget}
+              isLoading={budgetsLoading}
+            />
+          )}
+          {isLoading ? (
+            <ExpenseChartsSkeleton />
+          ) : (
+            <ExpenseCharts expenses={expenses} />
+          )}
+          {isLoading ? (
+            <ExpenseLogSkeleton />
+          ) : (
+            <ExpenseLog
+              expenses={expenses}
+              onEdit={handleEdit}
+              onDelete={openDeleteConfirm}
+            />
+          )}
         </div>
       </main>
 

@@ -2,7 +2,7 @@
  * Expense API: reads/writes expenses in Supabase (cloud).
  * Replaces localStorage so data syncs across devices for the logged-in user.
  * Each function requires a valid Supabase client and auth; returns data in the
- * same shape the app already uses (id, date, category, description, amount, paymentMethod, notes).
+ * same shape the app already uses (id, date, category, description, amount, paymentMethod, notes, createdAt).
  */
 
 import { supabase } from '../lib/supabase'
@@ -18,6 +18,7 @@ function rowToExpense(row) {
     amount: row.amount,
     paymentMethod: row.payment_method ?? '',
     notes: row.notes ?? '',
+    createdAt: row.created_at ?? null,
   }
 }
 
@@ -39,8 +40,9 @@ export async function fetchExpenses() {
 
   const { data, error } = await supabase
     .from('expenses')
-    .select('id, date, category, description, amount, payment_method, notes')
+    .select('id, date, category, description, amount, payment_method, notes, created_at')
     .order('date', { ascending: false })
+    .order('created_at', { ascending: false })
 
   if (error) return { data: [], error }
   return { data: (data || []).map(rowToExpense), error: null }
