@@ -4,11 +4,9 @@ import { useAuth } from './contexts/AuthContext'
 import { AuthScreen } from './components/AuthScreen'
 import { SetupRequired } from './components/SetupRequired'
 import { ExpenseProvider } from './contexts/ExpenseContext'
-import { BudgetProvider } from './contexts/BudgetContext'
 import AppLayout from './components/layout/AppLayout'
 import DashboardPage from './pages/DashboardPage'
 import ExpensesPage from './pages/ExpensesPage'
-import BudgetPage from './pages/BudgetPage'
 
 function App() {
   const {
@@ -94,15 +92,12 @@ function App() {
   return (
     <BrowserRouter>
       <ExpenseProvider>
-        <BudgetProvider>
-          <Routes>
-            <Route path="/" element={<AppLayout />}>
-              <Route index element={<DashboardPage />} />
-              <Route path="expenses" element={<ExpensesPage />} />
-              <Route path="budget" element={<BudgetPage />} />
-            </Route>
-          </Routes>
-        </BudgetProvider>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="expenses" element={<ExpensesPage />} />
+          </Route>
+        </Routes>
       </ExpenseProvider>
     </BrowserRouter>
   )

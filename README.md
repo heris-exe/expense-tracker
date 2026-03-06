@@ -26,7 +26,6 @@ A **React** web app to track daily expenses in **₦ (Naira)**. Built with Vite,
 ## Run locally
 
 ```bash
-cd expense-tracker
 npm install
 npm run dev
 ```
@@ -62,7 +61,7 @@ Preview locally: `npm run preview`
 ## Project structure
 
 ```
-expense-tracker/
+Spend-NG/
   index.html
   package.json
   vite.config.js

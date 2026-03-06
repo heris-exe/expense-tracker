@@ -1,6 +1,6 @@
 /**
  * Provides expense list state and actions to the whole app so the layout (modals, "Add expense")
- * and all pages (Dashboard, Expenses, Budget) share one source of truth.
+ * and all pages (Dashboard, Expenses) share one source of truth.
  * Avoids duplicate API calls and keeps add/edit/delete in sync everywhere.
  */
 

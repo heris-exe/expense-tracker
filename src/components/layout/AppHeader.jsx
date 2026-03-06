@@ -38,9 +38,10 @@ export default function AppHeader() {
             size="icon"
             onClick={() => signOut()}
             title="Sign out"
+            aria-label="Sign out"
             className="h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 touch-manipulation sm:h-9 sm:w-9 sm:min-h-0 sm:min-w-0"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" aria-hidden />
           </Button>
         )}
         <ThemeToggle />

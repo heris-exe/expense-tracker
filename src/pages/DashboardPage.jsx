@@ -1,6 +1,6 @@
 /**
  * Dashboard: overview with summary stats, insights, and a daily chart.
- * Quick-glance page after login; detailed expense list and budget live on their own pages.
+ * Quick-glance page after login; detailed expense list lives on its own page.
  */
 
 import { Link } from 'react-router-dom'
@@ -10,15 +10,12 @@ import {
   DailyExpenseChart,
   DailyExpenseChartSkeleton,
 } from '@/components/ExpenseCharts'
-import { BudgetStatusChart } from '@/components/BudgetCharts'
 import { useExpenseContext } from '@/contexts/ExpenseContext'
-import { useBudgetContext } from '@/contexts/BudgetContext'
 import { Button } from '@/components/ui/button'
-import { Wallet, PieChart } from 'lucide-react'
+import { Wallet } from 'lucide-react'
 
 export default function DashboardPage() {
   const { expenses, isLoading } = useExpenseContext()
-  const { budgetProgress, isLoading: budgetsLoading } = useBudgetContext()
 
   return (
     <div className="flex flex-col gap-6 sm:gap-10">
@@ -45,24 +42,11 @@ export default function DashboardPage() {
         )}
       </section>
 
-      {/* Budget status at a glance when user has budgets */}
-      {!budgetsLoading && budgetProgress.length > 0 && (
-        <section aria-label="Budget status overview">
-          <BudgetStatusChart budgetProgress={budgetProgress} />
-        </section>
-      )}
-
       <section className="flex flex-wrap gap-3 border-t border-border pt-6 sm:pt-8">
         <Button asChild variant="outline" className="gap-2">
           <Link to="/expenses">
             <Wallet className="h-4 w-4" />
             View all expenses
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="gap-2">
-          <Link to="/budget">
-            <PieChart className="h-4 w-4" />
-            Manage budgets
           </Link>
         </Button>
       </section>
